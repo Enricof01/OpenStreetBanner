@@ -16,11 +16,24 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import axios from "axios";
+import { useMemo, useState } from "react";
 
 type GeoState =
   | { status: "loading" | "idle"; coords?: undefined; error?: undefined }
   | { status: "ready"; coords: { lat: number; lng: number; accuracy?: number }; error?: undefined }
   | { status: "error"; coords?: undefined; error: string };
+
+  type TripResp = {
+  distance: number;
+  duration: number;
+  geometry: {
+    type: "LineString";
+    coordinates: [number, number][]; // [lon,lat]
+  };
+
+  inputPoints: [{id: string, lat: number, lng: number}]
+};
 
 type Props = {
   geo: GeoState;
@@ -51,9 +64,63 @@ function Content({
   onPlanRoute,
   selectedCount = 0,
   selectionCheck,
-  setSelectionCheck
+  setSelectionCheck,
+  selectedNodes
 }: Props) {
 
+  const [coordinates, setCoordinates] = useState<[{id: string, lat: number, lng: number}]>([{id: 'HQ',   lat: 48.50338, lng: 9.204515,}])
+
+  async function getCoords() {
+
+    const res = await axios.post<TripResp>(`/api/osrm/trip`, {array: selectedNodes})
+    const points = res.data.inputPoints
+    points.push({id: 'HQ',   lat: 48.50338, lng: 9.204515,})
+
+    setCoordinates(points)
+    return points
+
+  }
+type CoordPoint = {
+  id: string;
+  lat: number;
+  lng: number;
+};
+
+function buildGoogleMapsLink(coords: CoordPoint[]) {
+  if (!Array.isArray(coords) || coords.length < 2) return null;
+
+  const format = (coord: CoordPoint) => `${coord.lat},${coord.lng}`;
+
+  const origin = format(coords[0]);
+  const destination = format(coords[coords.length - 1]);
+
+  const waypoints =
+    coords.length > 2
+      ? coords.slice(1, -1).map(format).join("|")
+      : "";
+
+  return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}${
+    waypoints ? `&waypoints=${waypoints}` : ""
+  }`;
+}
+
+const handleOpenRoute = async () => {
+  try {
+    const coords = await getCoords();
+    const url = buildGoogleMapsLink(coords);
+
+    if (url) {
+      window.open(url, "_blank");
+    } else {
+      console.error("Zu wenig Koordinaten für eine Route");
+    }
+  } catch (error) {
+    console.error("Route konnte nicht geladen werden:", error);
+  }
+};
+
+
+  
 
   return (
     <Box sx={{ p: 2 }}>
@@ -133,7 +200,7 @@ function Content({
 
               <Button                       //Button um route zu planen
                 variant="contained"
-                onClick={onPlanRoute}
+                onClick={() => {onPlanRoute()}}
                 disabled={!routeMode}
                 fullWidth
                 sx={{ borderRadius: 2, py: 1.2 }}
@@ -148,8 +215,9 @@ function Content({
               )}
 
               <Typography variant="subtitle2" fontWeight={700}>
-                Link zu Google maps:
-                https://www.google.com/maps/dir/?api=1&origin=52.52,13.40&destination=52.52,13.40&waypoints=48.13,11.57|53.55,9.99
+                <Button onClick={handleOpenRoute}>
+                  Route in Google Maps öffnen
+                </Button>
               </Typography>
             </Stack>
           </CardContent>
