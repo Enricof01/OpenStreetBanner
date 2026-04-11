@@ -13,6 +13,7 @@ export default function CombinedMap() {
   const [selectedNodes, setSelectedNodes] = useState<number[]>([]);
   const[count, setCout] = useState<number>(0);
   const[newNodeCheck, setNewNodeCheck] = useState<boolean>(false)
+  const [loading, setLoading] = useState(false);
 
 
 
@@ -51,17 +52,18 @@ export default function CombinedMap() {
   routeMode={route}
   onToggleRouteMode={() => setRoute((r) => !r)}
   onPlanRoute={() => {
-    sendNodeIds();
+    sendNodeIds(); 
     setCout((prev) => prev + 1);
   }}
   selectionCheck = {newNodeCheck}
   setSelectionCheck = {setNewNodeCheck}
   selectedCount={selectedNodes.length}
   selectedNodes = {selectedNodes}
+  setLoading={setLoading}
 />
 
       <div style={{ flex: 1 }}>
-        <MapOnly newNodeCheck = {newNodeCheck} newRouteCount = {count} selectedNodes = {selectedNodes} setSelectedNodes = {setSelectedNodes} routeOption = {route} myPos={state.status === "ready" ? state.coords : undefined} />
+        <MapOnly loading = {loading} setLoading = {setLoading} newNodeCheck = {newNodeCheck} newRouteCount = {count} selectedNodes = {selectedNodes} setSelectedNodes = {setSelectedNodes} routeOption = {route} myPos={state.status === "ready" ? state.coords : undefined} />
       </div>
     </div>
   );

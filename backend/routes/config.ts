@@ -6,3 +6,4 @@ export const HQ  = {
   lat: 48.50338,
   lng: 9.204515,
 };
+

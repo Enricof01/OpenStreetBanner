@@ -60,7 +60,7 @@ function Recenter({ lat, lng }: { lat: number; lng: number }) {
 
 
 
-export default function MapOnly({ myPos, routeOption, selectedNodes, setSelectedNodes, newRouteCount, newNodeCheck }: {
+export default function MapOnly({ loading, setLoading, myPos, routeOption, selectedNodes, setSelectedNodes, newRouteCount, newNodeCheck }: {
 
 
   myPos?: { lat: number; lng: number; accuracy?: number };
@@ -69,12 +69,13 @@ export default function MapOnly({ myPos, routeOption, selectedNodes, setSelected
   setSelectedNodes: React.Dispatch<React.SetStateAction<number[]>>;
   newRouteCount: number;
   newNodeCheck: boolean;
+  loading: boolean;
+  setLoading: (arg: boolean) => void;
 
 }) {
   const [locations, setLocations] = useState<Location[]>([]);
   // const [selectedMarker, setSelectedMarker] = useState<Location | null>(null);
   const [editing, setEditing] = useState<Location | null>(null);
-  const [loading, setLoading] = useState(false);
 
   const dialogValue: MarkerDraft = {
     name: editing?.name ?? "",

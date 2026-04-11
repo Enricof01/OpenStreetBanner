@@ -52,6 +52,7 @@ type Props = {
   selectionCheck: boolean;
   setSelectionCheck: (arg: boolean) => void;  //Slide button route auswählen
   selectedNodes: number[];
+  setLoading : (arg: boolean) => void;
 };
 
 function Content({
@@ -65,7 +66,8 @@ function Content({
   selectedCount = 0,
   selectionCheck,
   setSelectionCheck,
-  selectedNodes
+  selectedNodes,
+  setLoading
 }: Props) {
 
   const [coordinates, setCoordinates] = useState<[{id: string, lat: number, lng: number}]>([{id: 'HQ',   lat: 48.50338, lng: 9.204515,}])
@@ -106,6 +108,8 @@ function buildGoogleMapsLink(coords: CoordPoint[]) {
 
 const handleOpenRoute = async () => {
   try {
+
+    setLoading(true);
     const coords = await getCoords();
     const url = buildGoogleMapsLink(coords);
 
@@ -116,6 +120,10 @@ const handleOpenRoute = async () => {
     }
   } catch (error) {
     console.error("Route konnte nicht geladen werden:", error);
+  }
+
+  finally{
+    setLoading(false);
   }
 };
 
