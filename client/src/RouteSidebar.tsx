@@ -23,8 +23,8 @@ type GeoState =
   | { status: "loading" | "idle"; coords?: undefined; error?: undefined }
   | { status: "ready"; coords: { lat: number; lng: number; accuracy?: number }; error?: undefined }
   | { status: "error"; coords?: undefined; error: string };
-
-  type TripResp = {
+  
+type TripResp = {
   distance: number;
   duration: number;
   geometry: {

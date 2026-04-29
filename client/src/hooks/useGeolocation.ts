@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type GeoState =
   | { status: "idle" | "loading"; coords?: undefined; error?: undefined }
@@ -7,16 +7,22 @@ type GeoState =
 
 export function useGeolocation() {
   const [state, setState] = useState<GeoState>({ status: "idle" });
+  const watchIdRef = useRef<number | null>(null);
 
-  async function request() {
+  function startWatch() {
     if (!("geolocation" in navigator)) {
       setState({ status: "error", error: "Geolocation wird vom Browser nicht unterstützt." });
       return;
     }
 
+    // Alten Watch stoppen falls einer läuft
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+    }
+
     setState({ status: "loading" });
 
-    navigator.geolocation.getCurrentPosition(
+    watchIdRef.current = navigator.geolocation.watchPosition(
       (pos) => {
         setState({
           status: "ready",
@@ -38,10 +44,17 @@ export function useGeolocation() {
     );
   }
 
-  // optional: direkt beim Laden anfragen
   useEffect(() => {
-    request();
+    startWatch();
+
+    // Cleanup beim Unmount
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
+    };
   }, []);
 
-  return { state, request };
+  // request() startet den Watch neu (z.B. nach einem Fehler)
+  return { state, request: startWatch };
 }
